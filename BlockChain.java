@@ -9,10 +9,10 @@ public class BlockChain {
  */
 
     //the previous block
-    Block prev;
+    Node<Block> first;
 
     //the next block
-    Block next;
+    Node<Block> last;
 
     //determines the size of the chain
     int size;
@@ -24,7 +24,9 @@ public class BlockChain {
  */
 
     public BlockChain(int initial){
-
+        Block initialBlock = new Block (1, initial, new Hash(new byte[0]));
+        this.first = new Node<Block>(initialBlock, null);
+        this.last = this.first;
     }
 
 
@@ -38,9 +40,10 @@ public class BlockChain {
      * mines a new candidate block to be added to the end of the chain. 
      * The returned Block should be valid to add onto this chain.
      */
-    public BlockMine(int amount){
+    public Block mine(int amount){
         //mine a block
-
+        Block mineBlock = new Block(this.getSize(), amount, this.last.data.getHash());
+        return mineBlock;
         //check if its valid
 
         
@@ -77,9 +80,12 @@ public class BlockChain {
         //if the chain is empty or has 1 block
         if(this.size <= 1){
             return false;
-        }
+        }//if
         
         //remove block
+        this.last = this.first;//sets last block to the block before it
+
+        //somehow set this.first = last.prev;
 
         this.size--;
         return true;
@@ -90,7 +96,7 @@ public class BlockChain {
      * returns the hash of the last block in the chain
      */
     public Hash getHash(){
-        
+        return this.last.getData().getHash();
     }//getHash
 
     /*
@@ -100,6 +106,7 @@ public class BlockChain {
      */
     public boolean isValidBlockChain(){
         //might have to check each blocks hash and mmake sure theyre in order
+        return false;
     }//isValidBlockChain
 
     /*
@@ -107,7 +114,7 @@ public class BlockChain {
      * prints Alexis’s and Blake’s respective balances
      */
     public void printBalance(){
-
+        return this.last.amount;
     }//printBalance
 
     /*
@@ -116,7 +123,7 @@ public class BlockChain {
      * string representation of each of its blocks, earliest to latest, one per line.
      */
     public String toString(){
-
+        return "";
     }//toString
 
 /*-----------------------
@@ -126,7 +133,7 @@ public class BlockChain {
 /**
    * Nodes in the linked list.
    */
-  class Node
+  class Node<T>
   {
     // +--------+-----------------------------------------------------------
     // | Fields |
@@ -140,7 +147,9 @@ public class BlockChain {
     /**
      * The next node in the list.  Set to null at the end of the list.
      */
-    Node next;
+    Node<T> next;
+
+    Node<T>prev;
 
     // +--------------+-----------------------------------------------------
     // | Constructors |
@@ -149,10 +158,26 @@ public class BlockChain {
     /**
      * Create a new node with specified data and next.
      */
-    public Node(T data, Node next)
+    public Node(T data, Node<T> next)
     {
       this.data = data;
       this.next = next;
     } // Node(T, Node)
+
+    /**
+     * 
+     */
+    public T getData(){
+        return this.data;
+      } // getData()
+  
+    /**
+     * 
+     */
+    public Node getNext(){
+        return this.next;
+    } // getData()
+
+
   } // class Node
 }
