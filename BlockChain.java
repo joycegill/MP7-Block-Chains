@@ -1,4 +1,4 @@
-package src;
+package MP7.src;
 
 public class BlockChain {
     

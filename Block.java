@@ -1,7 +1,10 @@
-package src;
+package MP7.src;
 
 import java.nio.ByteBuffer;
+import java.security.DigestException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.NoSuchElementException;
 import java.util.Arrays;
 import java.lang.*;
 
@@ -48,7 +51,12 @@ public class Block {
         this.prevHash = prevHash;
 
         //perform the mining operation for nonce and hash
-
+        try {
+            this.nonce = mine();
+        } catch (NoSuchAlgorithmException | DigestException e) {
+            e.printStackTrace();
+            System.err.println("No nonce was found");
+        }
     }
 
     /*
@@ -104,9 +112,50 @@ public class Block {
      * getHash()
      * returns the hash of this block
      */
-    public Hash getHash(){
-        return this.hash;
-    }
+    public Hash getHash() {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("sha-256");
+            md.update(ByteBuffer.allocate(4).putInt(getNum()).array());
+            md.update(ByteBuffer.allocate(4).putInt(getAmount()).array());
+            if (getPrevHash() != null)
+                md.update(getPrevHash().toString().getBytes()); // Only when prev exists
+            md.update(ByteBuffer.allocate(8).putLong(nonce).array());
+
+            byte[] hashByte = md.digest();
+            Hash hashObj = new Hash(hashByte);
+
+            return hashObj;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }//getHash
+
+    long mine() throws NoSuchAlgorithmException, DigestException {
+        MessageDigest md = MessageDigest.getInstance("sha-256");
+
+        try {
+            md.update(ByteBuffer.allocate(4).putInt(getNum()).array());
+            md.update(ByteBuffer.allocate(4).putInt(getAmount()).array());
+            if (getPrevHash() != null)
+                md.update(getPrevHash().toString().getBytes()); // Only when prev exists
+            for (long i = 0; i < Long.MAX_VALUE - 1; i++) {
+                MessageDigest mdCopy = (MessageDigest) md.clone();
+                mdCopy.update(ByteBuffer.allocate(8).putLong(i).array());
+                byte[] hash = mdCopy.digest();
+
+                Hash tmpHash = new Hash(hash);
+                if (tmpHash.isValid()) {
+                    return i;
+                }
+            }
+            throw new NoSuchElementException();
+
+        } catch (CloneNotSupportedException cnse) {
+            throw new DigestException("couldn't make digest of partial content");
+        }
+    }//mine
 
     /*
      * toString()
