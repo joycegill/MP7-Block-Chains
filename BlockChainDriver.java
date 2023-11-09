@@ -20,22 +20,23 @@ public class BlockChainDriver {
             String userInput = scanner.nextLine();
 
             while(! userInput.equals("quit")){
+                userInput = scanner.nextLine();
                 //keep reading lines
                 switch (userInput) {
                     case "mine": Block blk = blockChain.mine(amount);
-                                    userInput = scanner.nextLine();
+                                    break;
                     case "append": if(blk.hash.isValid()){
                                     blockChain.append(blk);
                                     } //needs a blk
-                                    userInput = scanner.nextLine();
+                                    break;
                     case "remove": blockChain.removeLast();
-                                    userInput = scanner.nextLine();
+                                    break;
                     case "check": blockChain.isValidBlockChain();
-                                    userInput = scanner.nextLine();
+                                    break;
                     case "report": blockChain.printBalance();
-                                    userInput = scanner.nextLine();
+                                    break;
                     case "help": pen.println(menu());
-                                    userInput = scanner.nextLine();
+                                    break;
                     case "quit": userInput = scanner.nextLine();
 
                 }

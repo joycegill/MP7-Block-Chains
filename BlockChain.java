@@ -14,6 +14,9 @@ public class BlockChain {
     //the next block
     Node last;
 
+    //the cursor block that will be used to iterate through the chain
+    Node current;
+
     //determines the size of the chain
     int size;
 
@@ -26,6 +29,7 @@ public class BlockChain {
     public BlockChain(int initial){
         Block initialBlock = new Block (1, initial, new Hash(new byte[0]));
         this.first = new Node(initialBlock, null);
+        current = first;
         this.last = this.first;
         this.size = 1;
     }
@@ -45,11 +49,7 @@ public class BlockChain {
         //mine a block
         Block mineBlock = new Block(this.getSize(), amount, this.last.data.getHash());
 
-        /* 
-        if(mineBlock.getHash().isValid()){
-            return mineBlock;
-        }
-        */
+      
         return mineBlock;
         //check if its valid
 
@@ -62,7 +62,7 @@ public class BlockChain {
      * a convenient method for quickly determining the size of the chain.
      */
     public int getSize(){
-        return this.size;
+        return size;
     }//getSize
 
     /*
@@ -70,35 +70,30 @@ public class BlockChain {
      * adds this block to the list, throwing an IllegalArgumentException if this block 
      * cannot be added to the chain (because it is invalid wrt the rest of the blocks).
      */
-    public void append(Block blk){
+    public void append(Block blk) throws IllegalArgumentException{
+        //check to see if the amount is valid
+        
+        
+        
         //if adding the first block
         if(size == 1){
             //sets the node
-            this.first.next = new Node(blk, null);
+            first.next = new Node(blk, null);
             
-            this.last = this.first.next; //links the two
-            //this.last.prev = this.first;
+            last = first.next; //links the two
 
             //sets the node's data = the block
-            this.last.data = blk;
+            last.data = blk;
 
         } else{
             //sets the last item as the new block
-            this.last.next = new Node(blk, null);
+            last.next = new Node(blk, null);
 
             //connects the two 
-            //this.last.prev = this.last;
-            //this.last = this.last.next;
-
-            //sets the node's data = the block
-            this.last.next.data = blk;
+            last = last.next;
         }
-        //add block to list
-
 
         this.size++;
-
-        //throw exception if it is invalid
 
     }//append
 
@@ -112,13 +107,19 @@ public class BlockChain {
         if(this.size <= 1){
             return false;
         }//if
-        
+
         //remove block
-        this.last.next = null;//sets last block to the block before it
+        last = null;//sets last block to the block before it
 
-        //somehow set this.first = last.prev;
+        //creates a node that will iterate to the end of the chain, and set last to it
+        
+        while(current.next != null){
+            current = current.next;
+        }
 
-        this.size--;
+        last = current;
+
+        size--;
         return true;
     }//removeLast
 
@@ -127,7 +128,7 @@ public class BlockChain {
      * returns the hash of the last block in the chain
      */
     public Hash getHash(){
-        return this.last.getData().getHash();
+        return last.getData().getHash();
     }//getHash
 
     /*
@@ -136,8 +137,28 @@ public class BlockChain {
      * are consistent and valid.
      */
     public boolean isValidBlockChain(){
+        
+        //places current at the start of the chain
+        current = first;
+
         //might have to check each blocks hash and mmake sure theyre in order
-        return false;
+        while(current.next != null){
+            if(current.data.hash.equals(current.next.data.prevHash)){
+                //calculates the transaction
+                totalAmt = current.data.getAmount() + current.next.data.getAmount();
+
+                //moves down the chain
+                current = current.next;
+            } else{
+                return false;
+            }//if
+        }//while
+
+        //check if the transactions are valid
+        if(!(totalAmt >=0 || totalAmt <= 300)){
+            return false;
+        }//if
+        return true;
     }//isValidBlockChain
 
     /*
@@ -156,6 +177,26 @@ public class BlockChain {
     public String toString(){
         return "";
     }//toString
+
+/*-----------------------
+ * Helper functions|
+ * ----------------------
+ */
+    /*
+     * checkAmt()
+     * iterates through the chain and makes sure the transactions are valid
+     */
+    public int checkAmt(){
+        //saves the initial amount
+        int totalAmt = first.data.amount;
+
+        current = first;
+        while(current.next != null){
+            totalAmt = current.data.getAmount() + current.next.data.getAmount();
+            current = current.next;
+        }
+        return totalAmt;
+    }//checkAmt
 
 /*-----------------------
  * Inner class|
@@ -179,8 +220,6 @@ public class BlockChain {
      * The next node in the list.  Set to null at the end of the list.
      */
     Node next;
-
-    Node prev;
 
     // +--------------+-----------------------------------------------------
     // | Constructors |
