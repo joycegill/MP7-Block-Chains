@@ -1,4 +1,3 @@
-package MP7.src;
 
 /**
  * Our blockChain class stores nodes that contain Block data, and use node next to link each block to 
@@ -34,7 +33,7 @@ public class BlockChain {
  */
 
   public BlockChain(int initial){
-    Block initialBlock = new Block (1, initial, new Hash(new byte[0]));
+    Block initialBlock = new Block (0, initial, null);
     this.first = new Node(initialBlock, null);
     current = first;
     this.last = this.first;
@@ -145,7 +144,7 @@ public class BlockChain {
 
     //might have to check each blocks hash and mmake sure theyre in order
     while(current.next != null){
-      if(current.data.hash.equals(current.next.data.prevHash)){
+      if(current.data.curHash.equals(current.next.data.prevHash)){
         //calculates the transaction
         totalAmt = current.data.getAmount() + current.next.data.getAmount();
 
@@ -190,7 +189,7 @@ public class BlockChain {
       current = current.next;
     }//while
 
-    System.out("Alexis: " + alexis + ", Blake: " + blake);
+    System.out.print("Alexis: " + alexis + ", Blake: " + blake);
     }//printBalance
 
   /*
@@ -203,8 +202,8 @@ public class BlockChain {
     current = first;
 
     while (current != null) {
-      str.concat(current.block.toString()).concat("\n");
-      current = curent.next;
+      str.concat(current.getData().toString()).concat("\n");
+      current = current.next;
     }//while
     return str;
   }//toString
